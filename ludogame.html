@@ -1,113 +1,273 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Dice Game</title>
+
     <style>
-        body{
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: sans-serif;
-            background-color: black;;
         }
-        #container{
+
+        body {
+            background: #101827;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #container {
+            width: 100%;
+            max-width: 650px;
             text-align: center;
+            background: #1e293b;
+            padding: 30px 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 35px #0006;
         }
-        #container h2{
-            color:white;
+
+        h1 {
+            color: #7dd3fc;
+            margin-bottom: 10px;
         }
-        #players{
+
+        #res {
+            margin: 20px 0;
+            min-height: 30px;
+            font-size: 20px;
+        }
+
+        #players {
             display: flex;
-            gap:2rem;
             justify-content: center;
-            color:white
+            gap: 35px;
+            flex-wrap: wrap;
+            margin: 30px 0;
         }
-        #players div img{
-            height:auto;
-            width:100%;
-            max-width:140px;
+
+        #players > div {
+            background: #334155;
+            padding: 20px;
+            border-radius: 15px;
+            min-width: 180px;
         }
-        #buttons{
+
+        .dice {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+            background: white;
+            color: #dc2626;
+            border: 3px solid #e2e8f0;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Segoe UI Symbol", sans-serif;
+            font-size: 105px;
+            line-height: 1;
+        }
+
+        #players p {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        #scores {
+            font-size: 17px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        #buttons {
             display: flex;
             justify-content: center;
-            gap:1rem; 
+            gap: 12px;
+            flex-wrap: wrap;
         }
-        #buttons button{
-            height:50px;
-            width:150px;
+
+        button {
+            border: none;
+            border-radius: 10px;
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
         }
-        #btn1{
-            background-color:#7bf1a8;
-            border:none;
-            font-size: 19px;
+
+        #btn1 {
+            background: #22c55e;
+            color: #052e16;
         }
-        #btn2{
-            background-color: #00c950;
-            border:none;
-            font-size: 19px;
+
+        #btn2 {
+            background: #38bdf8;
+            color: #082f49;
         }
-        
+
+        #btn3 {
+            background: #fbbf24;
+            color: #451a03;
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
+
 <body>
     <div id="container">
-        <h2 id="res">let's play</h2>
+        <h1>🎲 Dice Game</h1>
+        <p>Roll the dice and get the highest total!</p>
+
+        <h2 id="res">Let's play!</h2>
+
         <div id="players">
-            <div id="player1">
-                <img src="dice1.png" id="image1">
+            <div>
+                <div class="dice" id="image1" aria-label="Player 1 dice">⚀</div>
                 <p id="plyr1">Player 1</p>
+                <p id="score1">Total: 0</p>
             </div>
-            <div id="player2">
-                <img src="dice2.png" id="image2">
+
+            <div>
+                <div class="dice" id="image2" aria-label="Player 2 dice">⚀</div>
                 <p id="plyr2">Player 2</p>
+                <p id="score2">Total: 0</p>
             </div>
         </div>
+
+        <div id="scores">
+            <p>Rolls completed: <span id="turnCount">0</span>/10</p>
+            <p id="turnInfo">Player 1's turn</p>
+        </div>
+
         <div id="buttons">
-            <button id="btn1" onclick="roll()">Roll the dice</button>
-            <button id="btn2" onclick="edit()">Edit the name</button>
+            <button id="btn1" onclick="roll()">Roll the Dice</button>
+            <button id="btn2" onclick="edit()">Edit Names</button>
+            <button id="btn3" onclick="resetGame()">Restart Game</button>
         </div>
     </div>
+
     <script>
-        let sum1=0;
-        let sum2=0;
-        let turns=0;
-        let roll=()=>{
-            let res=document.getElementById("res");
-            let plyrnam1=document.getElementById("plyr1").innerHTML;
-            let plyrnam2=document.getElementById("plyr2").innerHTML;
-            if(turns%2==0){
-                let number1=Math.floor(Math.random()*6)+1;
-                let plyr1=document.getElementById("image1");
-                plyr1.src="dice"+number1+".png";
-                sum1=sum1+number1;
-                turns++;
+        let sum1 = 0;
+        let sum2 = 0;
+        let turns = 0;
+        let gameOver = false;
+
+        const diceFaces = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+
+        function roll() {
+            if (gameOver) return;
+
+            let number = Math.floor(Math.random() * 6) + 1;
+
+            if (turns % 2 === 0) {
+                document.getElementById("image1").textContent =
+                    diceFaces[number - 1];
+
+                sum1 += number;
+
+                document.getElementById("score1").textContent =
+                    "Total: " + sum1;
+
+                document.getElementById("res").textContent =
+                    document.getElementById("plyr1").textContent +
+                    " rolled " + number;
+
+            } else {
+                document.getElementById("image2").textContent =
+                    diceFaces[number - 1];
+
+                sum2 += number;
+
+                document.getElementById("score2").textContent =
+                    "Total: " + sum2;
+
+                document.getElementById("res").textContent =
+                    document.getElementById("plyr2").textContent +
+                    " rolled " + number;
             }
-            else{
-                let number2=Math.floor(Math.random()*6)+1;
-                let plyr2=document.getElementById("image2");
-                plyr2.src="dice"+number2+".png";
-                sum2=sum2+number2;
-                turns++;
-            } 
-                if(turns>=10){
-                    if(sum1>sum2){
-                    res.innerHTML=plyrnam1+" is winner";
+
+            turns++;
+
+            document.getElementById("turnCount").textContent = turns;
+
+            if (turns >= 10) {
+                let player1 = document.getElementById("plyr1").textContent;
+                let player2 = document.getElementById("plyr2").textContent;
+
+                if (sum1 > sum2) {
+                    document.getElementById("res").textContent =
+                        player1 + " wins! 🏆";
+                } else if (sum2 > sum1) {
+                    document.getElementById("res").textContent =
+                        player2 + " wins! 🏆";
+                } else {
+                    document.getElementById("res").textContent =
+                        "It's a draw! 🤝";
                 }
-                    else if(sum1<sum2){
-                    res.innerHTML=plyrnam2+" is winner";
-                }
-                    else{
-                    res.innerHTML="match is drawn";
-                }
-                    turns=0;
-                    sum1=0;
-                    sum2=0;
-                }
+
+                document.getElementById("turnInfo").textContent =
+                    "Game over! Restart to play again.";
+
+                gameOver = true;
+                document.getElementById("btn1").disabled = true;
+            } else {
+                document.getElementById("turnInfo").textContent =
+                    turns % 2 === 0
+                        ? document.getElementById("plyr1").textContent + "'s turn"
+                        : document.getElementById("plyr2").textContent + "'s turn";
+            }
         }
-        let edit=()=>{
-            let prom1=prompt("enter player 1 name");
-            let prom2=prompt("enter player 2 name");
-            document.getElementById("plyr1").innerHTML=prom1;
-            document.getElementById("plyr2").innerHTML=prom2;
+
+        function edit() {
+            let player1 = prompt("Enter Player 1 name");
+            let player2 = prompt("Enter Player 2 name");
+
+            if (player1 && player1.trim()) {
+                document.getElementById("plyr1").textContent = player1.trim();
+            }
+
+            if (player2 && player2.trim()) {
+                document.getElementById("plyr2").textContent = player2.trim();
+            }
+
+            document.getElementById("turnInfo").textContent =
+                turns % 2 === 0
+                    ? document.getElementById("plyr1").textContent + "'s turn"
+                    : document.getElementById("plyr2").textContent + "'s turn";
+        }
+
+        function resetGame() {
+            sum1 = 0;
+            sum2 = 0;
+            turns = 0;
+            gameOver = false;
+
+            document.getElementById("image1").textContent = "⚀";
+            document.getElementById("image2").textContent = "⚀";
+            document.getElementById("score1").textContent = "Total: 0";
+            document.getElementById("score2").textContent = "Total: 0";
+            document.getElementById("turnCount").textContent = "0";
+            document.getElementById("res").textContent = "Let's play!";
+            document.getElementById("turnInfo").textContent =
+                document.getElementById("plyr1").textContent + "'s turn";
+
+            document.getElementById("btn1").disabled = false;
         }
     </script>
 </body>
